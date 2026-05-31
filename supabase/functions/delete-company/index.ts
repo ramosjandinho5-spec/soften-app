@@ -30,14 +30,14 @@ serve(async (req) => {
 
     for (const table of tablesToClean) {
       console.log(`INFO: Limpando tabela: ${table}`);
-      const { error: updateError } = await supabaseAdmin
+      const { error: deleteError } = await supabaseAdmin
         .from(table)
-        .update({ company_id: null })
+        .delete()
         .eq('company_id', companyId);
 
-      if (updateError) {
-        console.error(`ERRO CRÍTICO ao limpar a tabela ${table}:`, JSON.stringify(updateError, null, 2));
-        throw new Error(`Erro de permissão ou referência ao tentar limpar a tabela ${table}.`);
+      if (deleteError) {
+        console.error(`ERRO CRÍTICO ao deletar da tabela ${table}:`, JSON.stringify(deleteError, null, 2));
+        throw new Error(`Erro de permissão ou referência ao tentar deletar da tabela ${table}.`);
       }
       console.log(`SUCESSO: Tabela ${table} limpa.`);
     }

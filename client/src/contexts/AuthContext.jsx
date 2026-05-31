@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext(null);
@@ -60,13 +60,16 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const userRef = useRef(user);
   useEffect(() => {
-    fetchSessionAndProfile(); // <<--- A CHAMADA QUE FALTAVA
+    userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    fetchSessionAndProfile();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // A lógica de `onAuthStateChange` é mais para REAGIR a mudanças (login/logout)
-      // A busca inicial garante que o estado seja preenchido no carregamento.
-      if (session?.user?.id !== user?.id) {
+      if (session?.user?.id !== userRef.current?.id) {
         fetchSessionAndProfile();
       }
     });
@@ -74,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       subscription?.unsubscribe();
     };
-  }, [fetchSessionAndProfile]); // Removido `user` para evitar loop
+  }, [fetchSessionAndProfile]);
 
   const switchCompany = async (newCompanyId) => {
     console.log(`[AuthContext] INICIANDO TROCA para empresa ID: ${newCompanyId}`);

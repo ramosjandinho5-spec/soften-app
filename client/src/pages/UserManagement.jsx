@@ -86,9 +86,10 @@ function UserManagement() {
     handleMenuClose();
   };
 
-  const handleDeleteClick = () => {
-    setAnchorEl(null);
+  const handleDeleteClick = (user) => {
+    setSelectedUser(user); // Garante que o usuário está selecionado
     setConfirmDialogOpen(true);
+    setAnchorEl(null);
   };
 
   const handleModulesClick = () => {
@@ -97,21 +98,27 @@ function UserManagement() {
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser) {
+      enqueueSnackbar('Erro: Nenhum usuário selecionado para exclusão.', { variant: 'error' });
+      setConfirmDialogOpen(false);
+      return;
+    }
 
+    const userToDelete = selectedUser; // Copia para uma variável local
+    setConfirmDialogOpen(false); // Fecha o diálogo primeiro
+    
     const { error } = await supabase.functions.invoke('delete-user', {
-      body: { userId: selectedUser.id },
+      body: { userId: userToDelete.id },
     });
 
     if (error) {
       const functionError = error.context?.json?.error || error.message;
       enqueueSnackbar(`Erro ao excluir usuário: ${functionError}`, { variant: 'error' });
     } else {
-      enqueueSnackbar(`Usuário ${selectedUser.email} excluído com sucesso.`, { variant: 'success' });
+      enqueueSnackbar(`Usuário ${userToDelete.email} excluído com sucesso.`, { variant: 'success' });
       fetchUsers();
     }
-    setConfirmDialogOpen(false);
-    setSelectedUser(null); // Limpa o usuário selecionado após a ação
+    setSelectedUser(null); // Limpa o estado global no final
   };
 
   const handleInviteUser = async ({ email, fullName }) => {
@@ -238,7 +245,7 @@ function UserManagement() {
         <MenuItem onClick={handleToggleAdmin}>
           {selectedUser?.user_metadata?.user_role === 'admin' ? 'Rebaixar para Usuário' : 'Promover a Admin'}
         </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={() => handleDeleteClick(selectedUser)} sx={{ color: 'error.main' }}>
           Excluir
         </MenuItem>
         <MenuItem onClick={handleModulesClick}>
