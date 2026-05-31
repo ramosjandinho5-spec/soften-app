@@ -41,20 +41,7 @@ serve(async (req) => {
       throw new Error("Faltando userId no corpo da requisição.");
     }
 
-    // 1. Deletar as associações do usuário com empresas
-    console.log(`INFO: Deletando associações de empresa para o usuário ID: ${userId}`);
-    const { error: companyUserError } = await supabaseAdmin
-      .from('company_users')
-      .delete()
-      .eq('user_id', userId);
-
-    if (companyUserError) {
-      console.error('ERRO CRÍTICO ao deletar de company_users:', JSON.stringify(companyUserError, null, 2));
-      throw new Error(`Falha ao remover usuário das empresas: ${companyUserError.message}`);
-    }
-    console.log(`SUCESSO: Associações de empresa para o usuário ${userId} deletadas.`);
-
-    // 2. Deletar o perfil do usuário para evitar erro de chave estrangeira
+    // 1. Deletar o perfil do usuário primeiro para evitar erro de chave estrangeira
     console.log(`INFO: Deletando perfil para o usuário ID: ${userId}`);
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
