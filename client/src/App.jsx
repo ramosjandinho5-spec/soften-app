@@ -95,6 +95,7 @@ const MainLayout = () => {
         setHasCompany(true);
       } else {
         setHasCompany(false);
+        setShowCompanyModal(true); // Força a exibição do modal
       }
     };
 
@@ -298,15 +299,9 @@ function AppContent() {
 
 function App() {
   return (
-    <SnackbarProvider maxSnack={3}>
-      <Router>
-        <AuthProvider>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <AppContent />
-          </LocalizationProvider>
-        </AuthProvider>
-      </Router>
-    </SnackbarProvider>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <AppContent />
+    </LocalizationProvider>
   );
 }
 

@@ -43,6 +43,7 @@ function NovoOrcamento() {
   const [selectedVendedor, setSelectedVendedor] = useState(null);
   const [selectedProduto, setSelectedProduto] = useState(null);
   const [itensOrcamento, setItensOrcamento] = useState([]);
+  const [orcamentoToDelete, setOrcamentoToDelete] = useState(null);
   
     const [subtotal, setSubtotal] = useState(0);
   const [descontoPercent, setDescontoPercent] = useState(0);
@@ -495,11 +496,9 @@ function NovoOrcamento() {
                 <Autocomplete
                   fullWidth
                   options={produtos}
-                  getOptionLabel={(option) => option.name ? `${option.name} - R$ ${Number(option.sale_price).toFixed(2)}` : ''}
+                  getOptionLabel={(option) => option.name || ''}
                   value={selectedProduto}
                   onChange={(event, newValue) => setSelectedProduto(newValue)}
-                  getOptionLabel={(option) => option.nome || ''}
-                      getOptionLabel={(option) => option.name || ''}
                   renderInput={(params) => <TextField {...params} label="Buscar produto" />}
                 />
               </Grid>

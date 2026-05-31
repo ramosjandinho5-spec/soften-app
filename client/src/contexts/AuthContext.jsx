@@ -61,7 +61,11 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    fetchSessionAndProfile(); // <<--- A CHAMADA QUE FALTAVA
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // A lógica de `onAuthStateChange` é mais para REAGIR a mudanças (login/logout)
+      // A busca inicial garante que o estado seja preenchido no carregamento.
       if (session?.user?.id !== user?.id) {
         fetchSessionAndProfile();
       }
@@ -70,7 +74,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       subscription?.unsubscribe();
     };
-  }, [user, fetchSessionAndProfile]);
+  }, [fetchSessionAndProfile]); // Removido `user` para evitar loop
 
   const switchCompany = async (newCompanyId) => {
     console.log(`[AuthContext] INICIANDO TROCA para empresa ID: ${newCompanyId}`);
@@ -111,6 +115,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     supabase,
     switchCompany, // Exporta a nova função poderosa
+    refetchProfile: fetchSessionAndProfile, // Expondo a função de refetch
   };
 
   return (
