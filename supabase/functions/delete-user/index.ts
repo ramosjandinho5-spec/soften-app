@@ -41,15 +41,29 @@ serve(async (req) => {
       throw new Error("Faltando userId no corpo da requisição.");
     }
 
-    console.log(`INFO: Executando auth.admin.deleteUser para o ID: ${userId}`);
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    // 1. Deletar o perfil do usuário primeiro para evitar erro de chave estrangeira
+    console.log(`INFO: Deletando perfil para o usuário ID: ${userId}`);
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
 
-    if (error) {
-      console.error('ERRO CRÍTICO ao excluir usuário do Auth:', JSON.stringify(error, null, 2));
-      if (error.message.includes("owner")) {
+    if (profileError) {
+      console.error('ERRO CRÍTICO ao deletar perfil:', JSON.stringify(profileError, null, 2));
+      throw new Error(`Falha ao deletar o perfil do usuário: ${profileError.message}`);
+    }
+    console.log(`SUCESSO: Perfil para o usuário ${userId} deletado.`);
+
+    // 2. Agora, deletar o usuário do Auth
+    console.log(`INFO: Executando auth.admin.deleteUser para o ID: ${userId}`);
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+    if (authError) {
+      console.error('ERRO CRÍTICO ao excluir usuário do Auth:', JSON.stringify(authError, null, 2));
+      if (authError.message.includes("owner")) {
         throw new Error("Não é possível excluir o proprietário do projeto.");
       }
-      throw error;
+      throw authError;
     }
     console.log(`SUCESSO: Usuário ${userId} excluído do Auth.`);
 
